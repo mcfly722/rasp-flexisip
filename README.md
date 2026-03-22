@@ -4,9 +4,10 @@ This is [Flexisip](https://gitlab.linphone.org/BC/public/flexisip) release build
 [Manual build process](manualBuild.md)
 
 Compiled Flexisip deb package for arm64 you can find in [releases](https://github.com/mcfly722/rasp-flexisip/releases)<br>
-Official documentation [link](https://wiki.linphone.org/xwiki/wiki/public/view/Flexisip/)
+Official documentation [link](https://wiki.linphone.org/xwiki/wiki/public/view/Flexisip/)<br>
+Configuration [reference for 2.4.3](https://wiki.linphone.org/xwiki/wiki/public/view/Flexisip/A.%20Configuration%20Reference%20Guide/2.4.3/) version<br>
 
-### Installation
+### Install flexisip service
 ```
 sudo apt update
 
@@ -14,30 +15,59 @@ wget https://github.com/mcfly722/rasp-flexisip/releases/download/bc-flexisip_2.4
 
 sudo apt install ./bc-flexisip_2.4.3-1_arm64.deb
 ```
+
+### Install libhiredis.so
+```
+sudo apt install libhiredis-dev
+
+sudo ln -s /usr/lib/aarch64-linux-gnu/libhiredis.so.0.14 /usr/lib/aarch64-linux-gnu/libhiredis.so.1.1.0
+sudo ldconfig
+
+```
 ### Configure
 ```
+# save original config
 mv /etc/flexisip/flexisip.conf /etc/flexisip/flexisip.conf.old
+
+# create empty users db
+cat > /etc/flexisip/userdb << EOF
+version:1
+
+EOF
+
+chmod 600 /etc/flexisip/userdb
 ```
-Replace users and their passwords
+# Service config
 ```
 cat > /etc/flexisip/flexisip.conf << EOF
-[server::proxy]
-listen=tcp:5060
-realm=flexisip.local
-auth-enabled=yes
+[global]
+require-peer-certificate=false
 
-[b2bua-server::sip-bridge]
-listen=tcp:5080
-realm=flexisip.local
+[module::Registrar]
+enabled=false
 
-[users]
-alice=password1
-bob=password2
+[presence-server]
+long-term-enabled=true
 
-[log]
-level=debug
-file=/var/log/flexisip/flexisip.log
-rotate=yes
-max-size=10M
+[module::Authentication]
+enabled=true
+available-algorithms=SHA-256 MD5
+db-implementation=file
+file-path=/etc/flexisip/userdb
+auth-domains=c0a80009.nip.io
 EOF
+```
+
+### Add users
+```
+export username="user1"
+export domain="c0a80009.nip.io"
+export password="secret"
+
+echo "${username}@${domain} clrtxt:${password} ;" >> /etc/flexisip/userdb
+```
+
+### Restart service
+```
+systemctl start flexisip-proxy flexisip-presence
 ```
