@@ -42,19 +42,23 @@ chmod 600 /etc/flexisip/userdb
 cat > /etc/flexisip/flexisip.conf << EOF
 [global]
 require-peer-certificate=false
+log-level=debug
+user-errors-logs=true
 
 [module::Registrar]
-enabled=false
+enabled=true
+reg-domains=c0a80009.nip.io
 
 [presence-server]
 long-term-enabled=true
 
 [module::Authentication]
 enabled=true
-available-algorithms=SHA-256 MD5
+available-algorithms=MD5
 db-implementation=file
 file-path=/etc/flexisip/userdb
 auth-domains=c0a80009.nip.io
+realm=c0a80009.nip.io
 EOF
 ```
 
@@ -69,5 +73,5 @@ echo "${username}@${domain} clrtxt:${password} ;" >> /etc/flexisip/userdb
 
 ### Restart service
 ```
-systemctl start flexisip-proxy flexisip-presence
+systemctl restart flexisip-proxy flexisip-presence
 ```
