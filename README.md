@@ -120,6 +120,8 @@ sudo make install
 ```
 #### 9. Build flexisip release
 ```
+git clone https://gitlab.linphone.org/BC/public/flexisip --recursive -b 2.4.3
+
 cd ~/flexisip
 
 cmake ./build \
