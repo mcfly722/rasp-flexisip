@@ -89,6 +89,7 @@ apt install libjsoncpp-dev
 apt install libgtest-dev
 apt install libmariadb-dev libmariadb-dev-compat
 
+apt install libjansson-dev
 apt install nlohmann-json3-dev
 ```
 #### 7. Build and install hireddis
