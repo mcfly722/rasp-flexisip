@@ -191,13 +191,26 @@ auth-domains=c0a80009.nip.io
 realm=c0a80009.nip.io
 EOF
 ```
-### Add users
+### Automate users creation
 ```
-export username="user1"
-export domain="c0a80009.nip.io"
-export password="secret"
+export ENCRYPTION_SECRET="<SPECIFY HERE STRONG PASSWORD WHICH WOULD BE USED AS USER PASSWORDS HASHING SALT>"
 
-echo "${username}@${domain} clrtxt:${password} ;" >> /etc/flexisip/userdb
+export realm="voip"
+
+# generate first 100 users
+for i in {1..100}; do
+  export username="${i}"
+  export secret=$(echo -n "${i}:${ENCRYPTION_SECRET}" | sha256sum | base64 -w 0 | cut -c1-7)
+  export sha256=$(echo -n "${username}:${realm}:${secret}" | sha256sum | awk '{print $1}')
+  echo "${username}@${realm} sha256:${sha256} ;" | sudo tee -a /etc/flexisip/userdb 
+done
+
+# get passwords of first 100 users
+for i in {1..100}; do
+	export username="${i}"
+	export secret=$(echo -n "${i}:${ENCRYPTION_SECRET}" | sha256sum | base64 -w 0 | cut -c1-7)
+  echo "${username} ${secret}"
+done
 ```
 
 ### Restart service
