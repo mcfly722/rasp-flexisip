@@ -212,6 +212,7 @@ for i in {1..100}; do
   echo "${username} ${secret}"
 done
 ```
+Now all users added to <b>/etc/flexisip/userdb</b> file
 
 ### Restart service
 ```
