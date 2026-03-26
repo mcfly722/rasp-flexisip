@@ -174,7 +174,7 @@ tls-certificates-ca-file=/etc/flexisip/tls/rootCA.crt
 
 [module::Registrar]
 enabled=true
-reg-domains=c0a80009.nip.io
+reg-domains=*
 
 [module::Router]
 enabled=true
@@ -187,29 +187,28 @@ enabled=true
 available-algorithms=MD5
 db-implementation=file
 file-path=/etc/flexisip/userdb
-auth-domains=c0a80009.nip.io
-realm=c0a80009.nip.io
-EOF
+auth-domains=*
+realm=voip
 ```
 ### Automate users creation
 ```
 export ENCRYPTION_SECRET="<SPECIFY HERE STRONG PASSWORD WHICH WOULD BE USED AS USER PASSWORDS HASHING SALT>"
+export DOMAIN="<SPECIFY HERE YOUR DOMAIN>"
+export REALM="voip"
 
-export realm="voip"
-
-# generate first 100 users
 for i in {1..100}; do
-  export username="${i}"
-  export secret=$(echo -n "${i}:${ENCRYPTION_SECRET}" | sha256sum | base64 -w 0 | cut -c1-7)
-  export sha256=$(echo -n "${username}:${realm}:${secret}" | sha256sum | awk '{print $1}')
-  echo "${username}@${realm} sha256:${sha256} ;" | sudo tee -a /etc/flexisip/userdb 
+	export username="${i}"
+	export secret=$(echo -n "${i}:${ENCRYPTION_SECRET}" | sha256sum | awk '{print $1}' | xxd -r -p | base64 -w 0 | cut -c1-7)
+	export md5=$(echo -n "${username}:${REALM}:${secret}" | md5sum | awk '{print $1}')
+	echo "${username}@${DOMAIN} md5:${md5} ;" | sudo tee -a /etc/flexisip/userdb
 done
+
 
 # get passwords of first 100 users
 for i in {1..100}; do
 	export username="${i}"
-	export secret=$(echo -n "${i}:${ENCRYPTION_SECRET}" | sha256sum | base64 -w 0 | cut -c1-7)
-  echo "${username} ${secret}"
+	export secret=$(echo -n "${i}:${ENCRYPTION_SECRET}" | sha256sum | awk '{print $1}' | xxd -r -p | base64 -w 0 | cut -c1-7)
+	echo "${username} ${secret}"
 done
 ```
 Now all users added to <b>/etc/flexisip/userdb</b> file
